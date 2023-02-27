@@ -23,8 +23,8 @@ def calculate_recall_and_precision(vector1, vector2):
             false_positives += 1
         elif vector1[i] == 1 and vector2[i] == 0:
             false_negatives += 1
-    recall = true_positives / (true_positives + false_negatives)
-    precision = true_positives / (true_positives + false_positives)
+    recall = true_positives / (true_positives + false_negatives) * 100
+    precision = true_positives / (true_positives + false_positives) * 100
     return recall, precision
 
 
@@ -37,25 +37,28 @@ if __name__ == '__main__':
     train_data_vector_list = xlsx_to_vector(train_data[1:].iloc[:, 1:])
     test_data_vector_list = xlsx_to_vector(test_data[1:].iloc[:, 1:])
 
-    test_variable = None
-    for count, vec1 in enumerate(test_data_vector_list):
+    avg_recall, avg_precision = 0, 0
+    for vec1 in test_data_vector_list:
         max_similarity = 0
         most_similar_vec = None
         for vec2 in train_data_vector_list:
             similarity = jaccard_score(vec1[:7], vec2[:7], average='micro')
             if similarity > max_similarity:
                 max_similarity = similarity
-                if count == len(test_data_vector_list) - 1:
-                    test_variable = vec2
                 most_similar_vec = vec2
-        print("Recommended: ", most_similar_vec[33:])
+        print('Recommended: ', most_similar_vec[33:])
+        recall, precision = calculate_recall_and_precision(vec1[33:], most_similar_vec[33:])
+        avg_recall += recall
+        avg_precision += precision
+        print('Recall: ', recall)
+        print('Precision: ', precision)
 
-    print(train_data_vector_list[119][33:])
-    print(test_variable[33:])
+    avg_recall = avg_recall / len(test_data_vector_list)
+    avg_precision = avg_precision / len(test_data_vector_list)
 
-    recall, precision = calculate_recall_and_precision(train_data_vector_list[119][33:], test_variable[33:])
-    print('Recall', recall * 100)
-    print('Precision', precision * 100)
+    print('------------------------------------------------')
+    print('Average recall', avg_recall)
+    print('Average precision', avg_precision)
 
 
 # model = SVD()
